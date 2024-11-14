@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 
 class EditProfilePage extends StatefulWidget {
   final String fullName;
-  final String email;
   final String phone;
   final String avatarUrl;
-  final Function(String, String, String, String) onSave;
+  final Function(String, String, String) onSave;
 
   const EditProfilePage({
     super.key,
     required this.fullName,
-    required this.email,
     required this.phone,
     required this.avatarUrl,
     required this.onSave,
@@ -22,7 +20,6 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _fullNameController;
-  late TextEditingController _emailController;
   late TextEditingController _phoneController;
   late TextEditingController _avatarUrlController;
 
@@ -30,7 +27,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     _fullNameController = TextEditingController(text: widget.fullName);
-    _emailController = TextEditingController(text: widget.email);
     _phoneController = TextEditingController(text: widget.phone);
     _avatarUrlController = TextEditingController(text: widget.avatarUrl);
   }
@@ -38,7 +34,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void dispose() {
     _fullNameController.dispose();
-    _emailController.dispose();
     _phoneController.dispose();
     _avatarUrlController.dispose();
     super.dispose();
@@ -62,11 +57,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Электронная почта'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
                 controller: _phoneController,
                 decoration: const InputDecoration(labelText: 'Номер телефона'),
               ),
@@ -80,7 +70,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 onPressed: () {
                   widget.onSave(
                     _fullNameController.text,
-                    _emailController.text,
                     _phoneController.text,
                     _avatarUrlController.text,
                   );

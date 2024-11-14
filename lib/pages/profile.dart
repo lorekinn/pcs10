@@ -1,3 +1,4 @@
+import 'package:app1/components/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'edit_profile_page.dart';
 
@@ -10,14 +11,18 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String _fullName = 'Mikhaylov Denis';
-  String _email = 'profile@example.com';
   String _phone = '+7 123 456 7890';
   String _avatarUrl = 'https://via.placeholder.com/150';
 
-  void _editProfile(String fullName, String email, String phone, String avatarUrl) {
+  final authService = AuthService();
+
+  void logout() async {
+    await authService.signOut();
+  }
+
+  void _editProfile(String fullName, String phone, String avatarUrl) {
     setState(() {
       _fullName = fullName;
-      _email = email;
       _phone = phone;
       _avatarUrl = avatarUrl;
     });
@@ -30,7 +35,6 @@ class _ProfilePageState extends State<ProfilePage> {
         MaterialPageRoute(
           builder: (context) => EditProfilePage(
             fullName: _fullName,
-            email: _email,
             phone: _phone,
             avatarUrl: _avatarUrl,
             onSave: _editProfile,
@@ -42,6 +46,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final currentEmail = authService.getCurrentUserEmail();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -90,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          _email,
+                          currentEmail.toString(),
                           style: const TextStyle(fontSize: 18, color: Colors.grey),
                         ),
                         const SizedBox(height: 10),

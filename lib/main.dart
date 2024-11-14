@@ -1,11 +1,14 @@
 import 'package:app1/pages/basket_page.dart';
 import 'package:app1/pages/favorite.dart';
+import 'package:app1/pages/login_page.dart';
 import 'package:app1/pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'models/note.dart';
 import 'pages/home_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+Future<void> main() async {
+  await Supabase.initialize(url: 'https://jizungpdvuyxvtckfakd.supabase.co' , anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppenVuZ3BkdnV5eHZ0Y2tmYWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE1NjU0NTksImV4cCI6MjA0NzE0MTQ1OX0.V96NJ_rioSDpf-y6icd8n5oagBPEXDL-hhBw5WvYzFE');
   runApp(const MyApp());
 }
 
@@ -37,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   Set<Sweet> favoriteSweets = <Sweet>{};
   Set<Sweet> basketItems = <Sweet>{};
+  bool _isLoggedIn = false;
 
   static const List<Widget> _widgetTitles = [
     Text('Главная'),
@@ -50,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _checkAuthStatus();
 
     _widgetOptions = <Widget>[
       HomePage(
@@ -65,8 +70,23 @@ class _MyHomePageState extends State<MyHomePage> {
         basketItems: basketItems,
         onRemoveFromBasket: _removeFromBasket,
       ),
-      const ProfilePage(),
+      _isLoggedIn ? const ProfilePage() : const LoginPage(),
     ];
+
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      setState(() {
+        _isLoggedIn = session != null;
+        _widgetOptions[3] = _isLoggedIn ? const ProfilePage() : const LoginPage();
+      });
+    });
+  }
+
+  Future<void> _checkAuthStatus() async {
+    final session = Supabase.instance.client.auth.currentSession;
+    setState(() {
+      _isLoggedIn = session != null;
+    });
   }
 
   void _onFavoriteChanged(Sweet sweet, bool isFavorite) {

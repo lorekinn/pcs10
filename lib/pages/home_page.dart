@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/note.dart';
-import '../components/item_note.dart';
 import '../pages/note_page.dart';
 import '../api/api.dart';
 
@@ -58,10 +57,15 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {});
+  }
+
   void _toggleFavorite(Sweet sweet) {
     final isFavorite = widget.favoriteSweets.contains(sweet);
     widget.onFavoriteChanged(sweet, !isFavorite);
-    setState(() {});
   }
 
   Future<void> _addNewSweet() async {
@@ -113,7 +117,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 TextField(
                   controller: _imageUrlController,
-                  decoration: const InputDecoration(labelText: 'URL изображения'),
+                  decoration: const InputDecoration(
+                      labelText: 'URL изображения'),
                 ),
                 TextField(
                   controller: _priceController,
@@ -159,7 +164,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
         title: const Text('Вкусняшки'),
         actions: [
           IconButton(
@@ -169,70 +173,109 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: sweets.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : GridView.builder(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(12.0),
         itemCount: sweets.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 10.0,
-          mainAxisSpacing: 10.0,
+          mainAxisSpacing: 12.0,
           childAspectRatio: 2 / 3,
         ),
         itemBuilder: (context, index) {
           final sweet = sweets[index];
           final isFavorite = widget.favoriteSweets.contains(sweet);
 
-          return Stack(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProductDetailPage(
-                        sweet: sweet,
-                        onDelete: () async {
-                          await _deleteProduct(sweet);
-                          await fetchProducts();
-                        },
+          return GestureDetector(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailPage(
+                    sweet: sweet,
+                    onDelete: () async {
+                      await _deleteProduct(sweet);
+                      await fetchProducts();
+                    },
+                  ),
+                ),
+              );
+              setState(() {});
+            },
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              elevation: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(15),
+                      ),
+                      child: Image.network(
+                        sweet.imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
                       ),
                     ),
-                  );
-                },
-                child: Item(sweet: sweet),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : Colors.grey,
                   ),
-                  onPressed: () {
-                    _toggleFavorite(sweet);
-                    setState(() {});
-                  },
-                ),
-              ),
-              Positioned(
-                bottom: 8,
-                right: 8,
-                child: IconButton(
-                  icon: const Icon(Icons.shopping_cart),
-                  onPressed: () {
-                    widget.onAddToBasket(sweet);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${sweet.name} добавлен в корзину'),
-                        duration: const Duration(seconds: 1),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sweet.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          '${sweet.price} ₽',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.pinkAccent.shade400,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Colors.grey,
+                        ),
+                        onPressed: () {
+                          _toggleFavorite(sweet);
+                        },
                       ),
-                    );
-                  },
-                ),
+                      IconButton(
+                        icon: const Icon(Icons.shopping_cart),
+                        color: Colors.blueGrey,
+                        onPressed: () {
+                          widget.onAddToBasket(sweet);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${sweet.name} добавлен в корзину'),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),
